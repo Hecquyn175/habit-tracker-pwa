@@ -1,0 +1,409 @@
+/* ==========================================================================
+   SYSTEM: NGŨ HÀNH LEVELING — Dark Sci-Fi HUD x Cổ Phong Ngũ Hành Stylesheet
+   ========================================================================== */
+
+:root {
+  --bg-deep: #060913;
+  --bg-card: rgba(13, 20, 38, 0.78);
+  --bg-card-hover: rgba(19, 29, 54, 0.88);
+  --border-hud: rgba(56, 189, 248, 0.25);
+  --neon-cyan: #38bdf8;
+  --neon-gold: #f59e0b;
+  --neon-crimson: #ef4444;
+
+  /* Ngũ Hành Colors */
+  --color-moc: #10b981;  /* 🌿 MỘC - Emerald */
+  --color-hoa: #f97316;  /* 🔥 HỎA - Orange/Red */
+  --color-tho: #f59e0b;  /* 🪨 THỔ - Amber */
+  --color-kim: #38bdf8;  /* ⚔️ KIM - Cyan/Silver */
+  --color-thuy: #818cf8; /* 💧 THỦY - Indigo/Purple */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-deep);
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 35%),
+    radial-gradient(circle at 85% 20%, rgba(129, 140, 248, 0.08) 0%, transparent 35%),
+    radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
+    linear-gradient(rgba(15, 23, 42, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.8) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+  color: #e2e8f0;
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.font-hud {
+  font-family: 'Rajdhani', 'Orbitron', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   GLASSMORPHISM & SOLO LEVELING SYSTEM HUD CARDS
+   ========================================================================== */
+
+.hud-card {
+  position: relative;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-hud);
+  border-radius: 0.85rem;
+  box-shadow:
+    0 10px 30px -10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.05);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.hud-card:hover {
+  border-color: rgba(56, 189, 248, 0.42);
+  box-shadow:
+    0 14px 35px -10px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
+    0 0 25px rgba(56, 189, 248, 0.1);
+}
+
+/* Corner HUD Accents */
+.hud-corner::before,
+.hud-corner::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  border-color: var(--neon-cyan);
+  opacity: 0.7;
+}
+
+.hud-corner::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--neon-cyan);
+  border-left: 2px solid var(--neon-cyan);
+  border-top-left-radius: 0.85rem;
+}
+
+.hud-corner::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--neon-cyan);
+  border-right: 2px solid var(--neon-cyan);
+  border-bottom-right-radius: 0.85rem;
+}
+
+/* ==========================================================================
+   GLOW EFFECTS & ELEMENT THEMING
+   ========================================================================== */
+
+.glow-cyan {
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.75);
+}
+
+.glow-gold {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+}
+
+.glow-emerald {
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
+}
+
+.glow-crimson {
+  text-shadow: 0 0 14px rgba(239, 68, 68, 0.9);
+}
+
+.badge-moc {
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.badge-hoa {
+  background: rgba(249, 115, 22, 0.14);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.15);
+}
+
+.badge-tho {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+}
+
+.badge-kim {
+  background: rgba(56, 189, 248, 0.14);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
+}
+
+.badge-thuy {
+  background: rgba(129, 140, 248, 0.14);
+  color: #a5b4fc;
+  border: 1px solid rgba(129, 140, 248, 0.45);
+  box-shadow: 0 0 10px rgba(129, 140, 248, 0.15);
+}
+
+/* ==========================================================================
+   HP BAR & BOSS BAR ANIMATIONS
+   ========================================================================== */
+
+.hp-bar-track,
+.boss-bar-track {
+  position: relative;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hp-bar-fill {
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+  position: relative;
+}
+
+.hp-bar-fill::after,
+.boss-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  animation: bar-shimmer 2.6s infinite;
+}
+
+.boss-bar-fill {
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(90deg, #dc2626 0%, #f97316 55%, #ef4444 100%);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.65);
+}
+
+@keyframes bar-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+/* ==========================================================================
+   SCREEN SHAKE, BOSS HIT & GACHA CHEST ANIMATIONS
+   ========================================================================== */
+
+@keyframes screen-shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-5px, -3px) rotate(-0.4deg); }
+  30% { transform: translate(5px, 2px) rotate(0.4deg); }
+  45% { transform: translate(-4px, 3px) rotate(-0.2deg); }
+  60% { transform: translate(4px, -2px) rotate(0.2deg); }
+  75% { transform: translate(-2px, 1px) rotate(0deg); }
+}
+
+.shake-screen {
+  animation: screen-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes boss-damage-shake {
+  0%, 100% { transform: translateX(0); filter: brightness(1); }
+  20% { transform: translateX(-7px) scale(1.02); filter: brightness(1.6) drop-shadow(0 0 14px #ef4444); }
+  40% { transform: translateX(7px) scale(0.99); filter: brightness(1.4); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(4px); }
+}
+
+.boss-hit-anim {
+  animation: boss-damage-shake 0.45s ease-in-out;
+}
+
+@keyframes chest-burst {
+  0% { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  50% { transform: scale(1.12) rotate(4deg); opacity: 1; }
+  75% { transform: scale(0.96) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.chest-pop-anim {
+  animation: chest-burst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* ==========================================================================
+   CHECK-IN MATRIX CELLS (5 STATES)
+   ========================================================================== */
+
+.quest-cell {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.quest-cell:hover {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.quest-cell:active {
+  transform: scale(0.92);
+}
+
+/* State 0: Empty */
+.cell-state-0 {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px dashed rgba(100, 116, 139, 0.4);
+  color: rgba(148, 163, 184, 0.35);
+}
+.cell-state-0:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  background: rgba(30, 41, 59, 0.85);
+}
+
+/* State 1: Completed (100% - Green ✓) */
+.cell-state-1 {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.45));
+  border: 1px solid #10b981;
+  color: #6ee7b7;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35), inset 0 0 6px rgba(16, 185, 129, 0.25);
+}
+
+/* State 0.5: Mini-habit (50% - Amber ½) */
+.cell-state-half {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.4));
+  border: 1px solid #f59e0b;
+  color: #fde68a;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+/* State 1.5: Overdrive (150% - Purple ⚡) */
+.cell-state-overdrive {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(217, 70, 239, 0.5));
+  border: 1px solid #d946ef;
+  color: #f5d0fe;
+  box-shadow: 0 0 16px rgba(217, 70, 239, 0.55), inset 0 0 8px rgba(240, 171, 252, 0.35);
+  animation: overdrive-pulse 2s infinite alternate;
+}
+
+@keyframes overdrive-pulse {
+  0% { box-shadow: 0 0 10px rgba(217, 70, 239, 0.45); }
+  100% { box-shadow: 0 0 20px rgba(217, 70, 239, 0.85), 0 0 6px #f0abfc; }
+}
+
+/* State 'freeze': Streak Freeze (Ice Blue 🛡️) */
+.cell-state-freeze {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(14, 165, 233, 0.45));
+  border: 1px solid #38bdf8;
+  color: #bae6fd;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+/* ==========================================================================
+   PENALTY ZONE (KHU VỰC PHẠT) RED ALERT MODE
+   ========================================================================== */
+
+body.penalty-zone-active {
+  background-color: #140507;
+  background-image:
+    radial-gradient(circle at 50% 20%, rgba(220, 38, 38, 0.22) 0%, transparent 55%),
+    linear-gradient(rgba(69, 10, 10, 0.55) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(69, 10, 10, 0.55) 1px, transparent 1px);
+}
+
+body.penalty-zone-active .hud-card {
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow:
+    0 10px 30px -10px rgba(0, 0, 0, 0.85),
+    0 0 22px rgba(239, 68, 68, 0.18);
+}
+
+@keyframes penalty-pulse {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.55);
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
+  }
+  50% {
+    border-color: rgba(248, 113, 113, 0.95);
+    box-shadow: 0 0 32px rgba(239, 68, 68, 0.75);
+  }
+}
+
+.penalty-banner {
+  animation: penalty-pulse 1.6s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   90-DAY HEATMAP GRID
+   ========================================================================== */
+
+.heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 13px);
+  grid-auto-flow: column;
+  grid-auto-columns: 13px;
+  gap: 4px;
+}
+
+.heatmap-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  cursor: pointer;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.35);
+  z-index: 20;
+  border: 1px solid #f8fafc;
+}
+
+.heat-0 { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(71, 85, 105, 0.3); }
+.heat-1 { background: rgba(16, 185, 129, 0.28); border: 1px solid rgba(16, 185, 129, 0.4); }
+.heat-2 { background: rgba(16, 185, 129, 0.52); border: 1px solid rgba(16, 185, 129, 0.65); }
+.heat-3 { background: rgba(16, 185, 129, 0.82); border: 1px solid #34d399; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+.heat-4 { background: linear-gradient(135deg, #38bdf8, #a855f7); border: 1px solid #e879f9; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); }
+
+/* ==========================================================================
+   RADAR SVG & SCROLLBAR
+   ========================================================================== */
+
+.radar-polygon {
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #090d1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

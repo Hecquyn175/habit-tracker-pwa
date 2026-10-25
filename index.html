@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#060913" />
+  <meta name="description" content="SYSTEM: NGŨ HÀNH LEVELING — Effort Analytics Tracker kết hợp Gamification Nhập vai Solo Leveling & Ngũ Hành Tương Sinh" />
+  <title>SYSTEM: NGŨ HÀNH LEVELING | Effort Analytics & RPG HUD</title>
+
+  <!-- PWA Manifest & Icon -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+
+  <!-- Google Fonts: Rajdhani / Orbitron (Sci-Fi HUD) & Be Vietnam Pro (Vietnamese UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            moc: '#10b981',
+            hoa: '#f97316',
+            tho: '#f59e0b',
+            kim: '#38bdf8',
+            thuy: '#818cf8'
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- FontAwesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Canvas-Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="antialiased selection:bg-sky-500 selection:text-slate-950 pb-12">
+
+  <!-- ========================================================================
+       FLOATING TOAST / MYSTERY LOOT DROP NOTIFICATION CONTAINER
+       ======================================================================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ========================================================================
+       HEATMAP FLOATING TOOLTIP
+       ======================================================================== -->
+  <div id="heatmap-tooltip" class="fixed z-50 hidden pointer-events-none bg-slate-950/95 border border-sky-500/50 rounded-lg px-3 py-2 text-xs shadow-2xl backdrop-blur-md max-w-xs"></div>
+
+  <!-- ========================================================================
+       MAIN CONTAINER
+       ======================================================================== -->
+  <div id="app-wrapper" class="max-w-[1600px] mx-auto px-3 sm:px-6 pt-4 space-y-5">
+
+    <!-- ======================================================================
+         PENALTY ZONE ALERT BANNER (HIỆN KHI HP = 0)
+         ====================================================================== -->
+    <div id="penalty-zone-banner" class="hidden hud-card penalty-banner border-2 border-red-500 bg-red-950/80 p-4 sm:p-5 rounded-xl">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-500/20 border border-red-400 flex items-center justify-center text-red-400 text-2xl shrink-0 animate-pulse">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2.5 py-0.5 text-xs font-hud font-bold uppercase tracking-wider bg-red-600 text-white rounded">SYSTEM ALERT</span>
+              <h2 class="text-lg sm:text-xl font-hud font-extrabold text-red-400 glow-crimson tracking-wide">
+                [PENALTY ZONE - KHU VỰC PHẠT ĐÃ KÍCH HOẠT]
+              </h2>
+            </div>
+            <p class="text-sm text-red-200 mt-1">
+              Sinh mệnh (HP) của Thợ Săn đã cạn kiệt về <strong class="text-white">0 HP</strong>. Quyền mua Phần thưởng Đời thực trong Cửa Hàng đã bị khóa!
+            </p>
+            <div class="mt-2 inline-flex items-center gap-2 bg-black/40 border border-red-500/40 px-3 py-1.5 rounded-lg text-sm text-amber-300">
+              <i class="fa-solid fa-dumbbell"></i>
+              <span>Nhiệm vụ phạt bắt buộc: <strong id="penalty-quest-text" class="text-white">Chống đẩy 30 cái hoặc Dọn dẹp bàn học trong 10 phút</strong></span>
+              <button onclick="app.rerollPenaltyQuest()" class="text-xs text-red-300 hover:text-white underline ml-2" title="Đổi nhiệm vụ phạt khác">
+                <i class="fa-solid fa-rotate"></i> Đổi
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
+          <button onclick="app.completePenaltyQuest()" class="w-full lg:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold text-sm shadow-lg shadow-red-600/30 border border-red-300/40 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-bolt"></i>
+            <span>XÁC NHẬN HOÀN THÀNH PHẠT (+50 HP)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         KHU VỰC 1: BẢNG TRẠNG THÁI THỢ SĂN (TOP SYSTEM HUD)
+         ====================================================================== -->
+    <header class="hud-card hud-corner p-4 sm:p-5">
+      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+        <!-- Brand & Hunter Rank -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="relative w-14 h-14 rounded-xl bg-slate-900 border border-sky-400/50 flex items-center justify-center shadow-lg shadow-sky-500/10 shrink-0">
+              <img src="./icon.svg" alt="System Logo" class="w-11 h-11" />
+              <span id="hud-rank-pill" class="absolute -bottom-2 -right-2 px-2 py-0.5 text-[11px] font-hud font-black rounded bg-sky-500 text-slate-950 shadow">
+                RANK B
+              </span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[11px] font-hud uppercase tracking-widest text-sky-400 font-semibold">[SOLO LEVELING x NGŨ HÀNH SYSTEM]</span>
+                <span id="weekly-title-badge" class="hidden px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300">
+                  👑 Kẻ Chinh Phục Hầm Ngục
+                </span>
+              </div>
+              <h1 class="text-xl sm:text-2xl font-hud font-extrabold tracking-wider text-white glow-cyan">
+                SYSTEM: NGŨ HÀNH LEVELING
+              </h1>
+              <div class="flex items-center gap-2 text-xs text-slate-400 mt-0.5 flex-wrap">
+                <span>Hạng Thợ Săn: <strong id="hunter-rank-name" class="text-sky-300 font-semibold">Rank B — Tinh Anh Linh Căn</strong></span>
+                <span class="text-slate-600">•</span>
+                <span>Hiệu suất 7 ngày: <strong id="hunter-avg-7d" class="text-emerald-400 font-semibold">0%</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HP Bar (Thanh Sinh Mệnh) -->
+        <div class="flex-1 max-w-md w-full bg-slate-900/70 border border-slate-800 rounded-xl p-3">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-hud font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-heart-pulse"></i> SINH MỆNH (HP BAR)
+            </span>
+            <div class="flex items-center gap-2">
+              <span id="hp-status-text" class="font-hud font-bold text-sm text-white">100 / 100 HP</span>
+              <button onclick="app.useHpPotion()" class="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold transition" title="Dùng 1 Đan Dược hồi +30 HP">
+                +Hồi HP
+              </button>
+            </div>
+          </div>
+          <div class="hp-bar-track w-full h-3.5 rounded-full p-0.5">
+            <div id="hp-bar-fill" class="hp-bar-fill h-full rounded-full bg-gradient-to-r from-rose-600 via-emerald-500 to-teal-400" style="width: 100%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-slate-400 mt-1.5">
+            <span id="hp-rule-hint">Dưới 50% mục tiêu ngày hôm qua sẽ bị trừ 20 HP</span>
+            <button onclick="app.triggerPenaltyDemo()" class="text-rose-400/80 hover:text-rose-300 underline text-[11px]" title="Giả lập HP = 0 để kiểm tra Khu Vực Phạt">
+              Test Khu Phạt
+            </button>
+          </div>
+        </div>
+
+        <!-- Kho Tài Nguyên (Resources) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0">
+          <!-- Gold -->
+          <div class="bg-slate-900/90 border border-amber-500/30 rounded-xl px-3 py-2 flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 text-base">
+              🪙
+            </div>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-400">Vàng</div>
+              <div id="stat-gold" class="font-hud font-bold text-base text-amber-300 glow-gold">0</div>
+            </div>
+          </div>
+
+          <!-- Streak Freeze Shield -->
+          <div class="bg-slate-900/90 border border-sky-500/30 rounded-xl px-3 py-2 flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/15 border border-sky-500/40 flex items-center justify-center text-sky-400 text-base">
+              🛡️
+            </div>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-400">Khiên Hồn</div>
+              <div id="stat-shields" class="font-hud font-bold text-base text-sky-300">0</div>
+            </div>
+          </div>
+
+          <!-- HP Potions -->
+          <div class="bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3 py-2 flex items-center gap-2.5 cursor-pointer hover:border-emerald-400 transition" onclick="app.useHpPotion()" title="Bấm để dùng Đan Dược (+30 HP)">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-base">
+              🧪
+            </div>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-400">Đan Dược</div>
+              <div id="stat-potions" class="font-hud font-bold text-base text-emerald-300">0</div>
+            </div>
+          </div>
+
+          <!-- Global Streak -->
+          <div class="bg-slate-900/90 border border-orange-500/30 rounded-xl px-3 py-2 flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-orange-500/15 border border-orange-500/40 flex items-center justify-center text-orange-400 text-base">
+              🔥
+            </div>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-400">Chuỗi Bất Bại</div>
+              <div class="font-hud font-bold text-base text-orange-300"><span id="stat-global-streak">0</span> <span class="text-xs font-normal">ngày</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Utility Action Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-2.5 pt-3.5">
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="app.openHabitModal()" class="px-3.5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-sky-500/20 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i>
+            <span>Thêm Thói Quen</span>
+          </button>
+
+          <button onclick="app.openPomodoroModal()" class="px-3.5 py-2 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/50 text-indigo-200 font-semibold text-xs sm:text-sm transition flex items-center gap-1.5">
+            <span>⚔️</span>
+            <span>Hầm Ngục Tập Trung (Pomodoro)</span>
+          </button>
+
+          <button onclick="app.openShopModal()" class="px-3.5 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 font-semibold text-xs sm:text-sm transition flex items-center gap-1.5">
+            <span>🛒</span>
+            <span>Cửa Hàng & Túi Đồ</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="app.exportBackupJSON()" class="px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-600/60 text-slate-200 text-xs font-medium transition flex items-center gap-1.5">
+            <i class="fa-solid fa-download text-sky-400"></i>
+            <span>⬇ Backup JSON</span>
+          </button>
+
+          <label class="px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-600/60 text-slate-200 text-xs font-medium transition flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-upload text-emerald-400"></i>
+            <span>⬆ Restore JSON</span>
+            <input type="file" id="restore-json-input" accept=".json" class="hidden" onchange="app.importRestoreJSON(event)" />
+          </label>
+
+          <button id="btn-sound-toggle" onclick="app.toggleSound()" class="px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-sky-500/40 text-sky-300 text-xs font-medium transition flex items-center gap-1.5">
+            <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+            <span id="sound-label">🔊 Âm Thanh: BẬT</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         MAIN BENTO GRID: LEFT/CENTER (ANALYTICS + MATRIX) & RIGHT SIDEBAR (RADAR + BOSS)
+         ====================================================================== -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+
+      <!-- LEFT & CENTER COLUMN (8/12 on XL) -->
+      <div class="xl:col-span-8 space-y-5">
+
+        <!-- ==================================================================
+             KHU VỰC 2: ĐỒ THỊ SỰ CỐ GẮNG ĐA TẦNG (MAIN EFFORT ANALYTICS)
+             ================================================================== -->
+        <section class="hud-card hud-corner p-4 sm:p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+                <span class="text-[11px] font-hud uppercase tracking-widest text-sky-400 font-bold">EFFORT ANALYTICS ENGINE</span>
+              </div>
+              <h2 class="text-lg sm:text-xl font-hud font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-sky-400"></i>
+                <span>ĐỒ THỊ SỰ CỐ GẮNG ĐA TẦNG & ĐỐI CHIẾU QUÁ KHỨ</span>
+              </h2>
+            </div>
+
+            <!-- Time Range Switcher (7d / 14d / 30d) -->
+            <div class="inline-flex rounded-lg bg-slate-900/90 p-1 border border-slate-700/70 self-start sm:self-auto">
+              <button id="range-btn-7" onclick="app.setChartRange(7)" class="px-3 py-1 rounded-md text-xs font-hud font-bold transition bg-sky-500 text-slate-950">
+                7 NGÀY
+              </button>
+              <button id="range-btn-14" onclick="app.setChartRange(14)" class="px-3 py-1 rounded-md text-xs font-hud font-bold transition text-slate-300 hover:text-white">
+                14 NGÀY
+              </button>
+              <button id="range-btn-30" onclick="app.setChartRange(30)" class="px-3 py-1 rounded-md text-xs font-hud font-bold transition text-slate-300 hover:text-white">
+                30 NGÀY
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Analytics KPI Strip -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div class="bg-slate-900/75 border border-slate-800 rounded-xl p-3">
+              <div class="text-[11px] text-slate-400">Điểm Nỗ Lực Hôm Nay</div>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="kpi-today-score" class="text-xl font-hud font-extrabold text-sky-400 glow-cyan">0</span>
+                <span id="kpi-today-max" class="text-xs text-slate-400">/ 20 đ</span>
+              </div>
+              <div id="kpi-harmony-badge" class="text-[10px] text-emerald-400 mt-1 font-medium">Chưa kích hoạt Hợp Nhất</div>
+            </div>
+
+            <div class="bg-slate-900/75 border border-slate-800 rounded-xl p-3">
+              <div class="text-[11px] text-slate-400">So Với Kỳ Trước (Ghost)</div>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="kpi-vs-ghost" class="text-xl font-hud font-extrabold text-emerald-400">+0%</span>
+              </div>
+              <div id="kpi-vs-ghost-sub" class="text-[10px] text-slate-400 mt-1">Đang đua với bóng ma quá khứ</div>
+            </div>
+
+            <div class="bg-slate-900/75 border border-slate-800 rounded-xl p-3">
+              <div class="text-[11px] text-slate-400">Trung Bình Động MA7</div>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="kpi-ma7-val" class="text-xl font-hud font-extrabold text-amber-400 glow-gold">0.0 đ</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1">Xu hướng phong độ 7 ngày</div>
+            </div>
+
+            <div class="bg-slate-900/75 border border-slate-800 rounded-xl p-3">
+              <div class="text-[11px] text-slate-400">Tương Sinh & Hợp Nhất</div>
+              <div class="flex items-baseline gap-2 mt-0.5">
+                <span id="kpi-active-elements" class="text-xl font-hud font-extrabold text-purple-400">0 / 5 Hành</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1">Đủ 5 hành ➔ +25% Điểm & +15 HP</div>
+            </div>
+          </div>
+
+          <!-- Main Chart.js Canvas -->
+          <div class="relative h-[290px] sm:h-[330px] w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+            <canvas id="effortChart"></canvas>
+          </div>
+
+          <!-- 90-Day Consistency Heatmap -->
+          <div class="mt-5 pt-4 border-t border-slate-800/80">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-fire-flame-curved text-emerald-400 text-sm"></i>
+                <h3 class="text-xs sm:text-sm font-hud font-bold uppercase tracking-wider text-slate-200">
+                  LƯỚI NHIỆT ĐỘ KIÊN TRÌ 90 NGÀY (CONSISTENCY HEATMAP)
+                </h3>
+                <span class="text-[11px] text-slate-400 hidden md:inline">— Rê chuột xem điểm & ghi chú, bấm vào ô để sửa nhật ký</span>
+              </div>
+              <!-- Heatmap Legend -->
+              <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+                <span>Ít</span>
+                <span class="w-3 h-3 rounded-sm heat-0 inline-block"></span>
+                <span class="w-3 h-3 rounded-sm heat-1 inline-block"></span>
+                <span class="w-3 h-3 rounded-sm heat-2 inline-block"></span>
+                <span class="w-3 h-3 rounded-sm heat-3 inline-block"></span>
+                <span class="w-3 h-3 rounded-sm heat-4 inline-block" title=">100% Overdrive / Hợp Nhất"></span>
+                <span>Bứt phá ⚡</span>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto pb-2">
+              <div id="heatmap-container" class="heatmap-grid min-w-max py-1"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             KHU VỰC 3: BẢNG MA TRẬN NHIỆM VỤ TUẦN (WEEKLY QUEST MATRIX)
+             ================================================================== -->
+        <section class="hud-card hud-corner p-4 sm:p-5">
+          <!-- Matrix Header & Week Navigation -->
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-hud uppercase tracking-widest text-emerald-400 font-bold">DAILY & WEEKLY QUEST LOG</span>
+              </div>
+              <h2 class="text-lg sm:text-xl font-hud font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-table-cells-large text-emerald-400"></i>
+                <span>BẢNG MA TRẬN NHIỆM VỤ TUẦN (NGŨ HÀNH TƯƠNG SINH)</span>
+              </h2>
+            </div>
+
+            <!-- Week Navigation -->
+            <div class="flex items-center gap-2 self-start lg:self-auto">
+              <button onclick="app.changeWeek(-1)" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-200 transition">
+                ◀ Tuần trước
+              </button>
+              <button onclick="app.resetToCurrentWeek()" class="px-3 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-xs font-semibold text-sky-300 transition">
+                Tuần này
+              </button>
+              <button onclick="app.changeWeek(1)" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-200 transition">
+                Tuần sau ▶
+              </button>
+            </div>
+          </div>
+
+          <!-- Ngũ Hành Tương Sinh Live Cycle Bar -->
+          <div class="bg-slate-950/75 border border-slate-800 rounded-xl p-3 mb-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <div class="text-xs text-slate-300 flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-amber-400"><i class="fa-solid fa-circle-nodes"></i> Vòng Tương Sinh Hôm Nay:</span>
+                <div id="tuong-sinh-chain" class="flex items-center gap-1 flex-wrap"></div>
+              </div>
+              <div id="week-range-label" class="text-xs font-hud font-bold text-sky-300 uppercase tracking-wider"></div>
+            </div>
+          </div>
+
+          <!-- Filter Tabs & State Legend -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+            <!-- 5 Element Filters -->
+            <div id="element-filter-tabs" class="flex flex-wrap items-center gap-1.5">
+              <button onclick="app.setElementFilter('ALL')" data-filter="ALL" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-sky-500 text-slate-950">
+                Tất cả
+              </button>
+              <button onclick="app.setElementFilter('MOC')" data-filter="MOC" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-900 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/10">
+                🌿 Mộc (VIT)
+              </button>
+              <button onclick="app.setElementFilter('HOA')" data-filter="HOA" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-900 text-orange-400 border border-orange-500/30 hover:bg-orange-500/10">
+                🔥 Hỏa (WIS)
+              </button>
+              <button onclick="app.setElementFilter('THO')" data-filter="THO" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-900 text-amber-400 border border-amber-500/30 hover:bg-amber-500/10">
+                🪨 Thổ (WIL)
+              </button>
+              <button onclick="app.setElementFilter('KIM')" data-filter="KIM" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-900 text-sky-400 border border-sky-500/30 hover:bg-sky-500/10">
+                ⚔️ Kim (DEX)
+              </button>
+              <button onclick="app.setElementFilter('THUY')" data-filter="THUY" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition bg-slate-900 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/10">
+                💧 Thủy (INT)
+              </button>
+            </div>
+
+            <!-- Legend for 5 Click States -->
+            <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">✓ 100%</span>
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">½ 50%</span>
+              <span class="px-2 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40">⚡ 150%</span>
+              <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">🛡️ Đóng băng</span>
+            </div>
+          </div>
+
+          <!-- Matrix Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[780px]">
+              <thead>
+                <tr id="matrix-thead-row" class="border-b border-slate-800 text-xs text-slate-400 font-hud uppercase">
+                  <!-- Populated dynamically by app.js -->
+                </tr>
+              </thead>
+              <tbody id="matrix-tbody" class="divide-y divide-slate-800/60 text-sm">
+                <!-- Populated dynamically by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- ====================================================================
+           KHU VỰC 4: RADAR NGŨ HÀNH & BOSS HẦM NGỤC TUẦN (RIGHT SIDEBAR 4/12)
+           ==================================================================== -->
+      <div class="xl:col-span-4 space-y-5">
+
+        <!-- CARD 1: BIỂU ĐỒ RADAR NGŨ GIÁC (PENTAGON ELEMENT CHART) -->
+        <section class="hud-card hud-corner p-4 sm:p-5">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <span class="text-[11px] font-hud uppercase tracking-widest text-indigo-400 font-bold">ELEMENTAL BALANCE</span>
+              <h2 class="text-lg font-hud font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-compass text-indigo-400"></i>
+                <span>RADAR NGŨ HÀNH LINH CĂN (7 NGÀY)</span>
+              </h2>
+            </div>
+            <span id="radar-balance-score" class="px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 font-hud font-bold text-xs">
+              Cân bằng: 0%
+            </span>
+          </div>
+
+          <!-- Cảnh báo Khí huyết suy giảm nếu Mộc < 40% -->
+          <div id="moc-warning-alert" class="hidden mb-3 p-2.5 rounded-lg bg-rose-950/80 border border-rose-500/60 text-rose-200 text-xs font-semibold flex items-center gap-2 animate-pulse">
+            <i class="fa-solid fa-heart-crack text-rose-400 text-base"></i>
+            <span>[Cảnh báo: Khí huyết suy giảm - Cần ngủ sớm!] (Hành Mộc &lt; 40%)</span>
+          </div>
+
+          <!-- Dynamic SVG Pentagon Radar -->
+          <div class="flex items-center justify-center my-2">
+            <svg id="pentagon-radar-svg" viewBox="0 0 320 300" class="w-full max-w-[310px] h-auto overflow-visible"></svg>
+          </div>
+
+          <!-- 5 Elements Breakdown List -->
+          <div id="radar-stats-list" class="grid grid-cols-1 gap-2 mt-3 pt-3 border-t border-slate-800/80 text-xs">
+            <!-- Populated dynamically -->
+          </div>
+        </section>
+
+        <!-- CARD 2: BOSS HẦM NGỤC TUẦN (WEEKLY DUNGEON RAID) -->
+        <section id="boss-raid-card" class="hud-card hud-corner p-4 sm:p-5 border-rose-500/30">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <span class="text-[11px] font-hud uppercase tracking-widest text-rose-400 font-bold">WEEKLY DUNGEON RAID</span>
+              <h2 class="text-lg font-hud font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-skull-crossbones text-rose-500"></i>
+                <span>BOSS HẦM NGỤC TUẦN</span>
+              </h2>
+            </div>
+            <span id="boss-status-badge" class="px-2.5 py-0.5 rounded text-xs font-hud font-bold uppercase bg-rose-500/20 border border-rose-500/50 text-rose-300">
+              ĐANG GIAO CHIẾN
+            </span>
+          </div>
+
+          <!-- Boss Avatar & Info -->
+          <div class="relative rounded-xl bg-gradient-to-br from-slate-900 via-rose-950/35 to-slate-950 border border-rose-500/30 p-4 mb-3 overflow-hidden">
+            <div class="flex items-center gap-4">
+              <div id="boss-avatar-box" class="w-16 h-16 rounded-2xl bg-rose-500/15 border border-rose-500/50 flex items-center justify-center text-3xl shadow-inner shrink-0">
+                👹
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="text-[11px] font-hud text-rose-400 uppercase tracking-wider" id="boss-rank-tag">[S-RANK DUNGEON BOSS]</div>
+                <h3 id="boss-name" class="text-lg font-hud font-extrabold text-white truncate">Thực Thể Trì Hoãn</h3>
+                <p id="boss-lore" class="text-xs text-slate-300 line-clamp-2 mt-0.5">
+                  Kẻ đánh cắp thời gian và làm tê liệt ý chí mỗi tối. Mọi điểm nỗ lực trong tuần sẽ giáng sát thương trực diện!
+                </p>
+              </div>
+            </div>
+
+            <!-- Boss HP Bar -->
+            <div class="mt-4">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span class="font-hud font-bold text-rose-300 uppercase">SINH LỰC BOSS (80% MAX TUẦN)</span>
+                <span id="boss-hp-text" class="font-hud font-extrabold text-white">100 / 100 HP</span>
+              </div>
+              <div class="boss-bar-track w-full h-4 rounded-full p-0.5">
+                <div id="boss-hp-fill" class="boss-bar-fill h-full rounded-full" style="width: 100%"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-400 mt-1.5">
+                <span>Sát thương đã gây tuần này: <strong id="boss-dmg-dealt" class="text-amber-300">0 đ</strong></span>
+                <span>Thưởng hạ gục: <strong class="text-amber-400">+200 🪙 & Danh Hiệu</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Combat Log / Instructions -->
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-300 space-y-1.5">
+            <div class="font-hud font-bold text-sky-400 uppercase tracking-wider flex items-center justify-between">
+              <span><i class="fa-solid fa-bolt"></i> Cơ chế Sát Thương & Rớt Đồ</span>
+              <span class="text-[11px] text-fuchsia-400">20% Tỷ lệ Nổ Rương 🎁</span>
+            </div>
+            <p class="text-slate-400 leading-relaxed">
+              • Mỗi <strong class="text-white">1 điểm nỗ lực</strong> kiếm được = <strong class="text-rose-400">-1 HP Boss</strong>.<br/>
+              • Hoàn thành nhiệm vụ có <strong class="text-amber-300">20% cơ hội</strong> rơi <em>Rương Bóng Tối</em> (+30 Vàng, +1 Khiên Định Hồn, hoặc +1 Đan Dược HP).
+            </p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 1: THÊM / SỬA THÓI QUEN (HABIT MODAL)
+       ======================================================================== -->
+  <div id="habit-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="hud-card max-w-md w-full p-5 sm:p-6 border border-sky-500/50">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 id="habit-modal-title" class="text-lg font-hud font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-scroll text-sky-400"></i>
+          <span>KHỞI TẠO NHIỆM VỤ LINH CĂN</span>
+        </h3>
+        <button onclick="app.closeHabitModal()" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="habit-form" onsubmit="app.saveHabitForm(event)" class="space-y-4 mt-4">
+        <input type="hidden" id="habit-id-input" />
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            Tên Thói Quen / Nhiệm Vụ
+          </label>
+          <input
+            type="text"
+            id="habit-name-input"
+            required
+            placeholder="VD: Đọc paper & Nghiên cứu mô hình YOLO"
+            class="w-full px-3.5 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-sky-400"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            Chọn Ngũ Hành Linh Căn (Quy luật Tương Sinh)
+          </label>
+          <select
+            id="habit-element-input"
+            class="w-full px-3.5 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-sky-400"
+          >
+            <option value="MOC">🌿 MỘC (VIT - Sinh Mệnh & Hồi Phục) — Sinh Hỏa</option>
+            <option value="HOA">🔥 HỎA (WIS - Thần Thức & Ngoại Ngữ) — Sinh Thổ</option>
+            <option value="THO">🪨 THỔ (WIL - Định Lực & Thể Phách) — Sinh Kim</option>
+            <option value="KIM">⚔️ KIM (DEX - Thực Thi & Xuất Chiêu) — Sinh Thủy</option>
+            <option value="THUY">💧 THỦY (INT - Tĩnh Trí & Ngộ Tính) — Sinh Mộc</option>
+          </select>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">
+              Trọng Số Điểm Nỗ Lực (1 ➔ 10 điểm)
+            </label>
+            <span id="habit-weight-display" class="font-hud font-bold text-sm text-sky-400">+5 điểm (+50 🪙)</span>
+          </div>
+          <input
+            type="range"
+            id="habit-weight-input"
+            min="1"
+            max="10"
+            value="5"
+            oninput="document.getElementById('habit-weight-display').textContent = '+' + this.value + ' điểm (+' + (this.value * 10) + ' 🪙)'"
+            class="w-full accent-sky-400 cursor-pointer"
+          />
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+            <span>1 (Nhẹ)</span>
+            <span>5 (Tiêu chuẩn)</span>
+            <span>10 (Đại Nhiệm)</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+          <button type="button" onclick="app.closeHabitModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+            Hủy
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-lg shadow-sky-500/25">
+            Lưu Nhiệm Vụ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: HẦM NGỤC TẬP TRUNG (POMODORO FOCUS DUNGEON)
+       ======================================================================== -->
+  <div id="pomodoro-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="hud-card max-w-md w-full p-5 sm:p-6 border border-indigo-500/50 text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="text-left">
+          <span class="text-[10px] font-hud uppercase tracking-widest text-indigo-400 font-bold">INSTANCE DUNGEON</span>
+          <h3 class="text-lg font-hud font-bold text-white">⚔️ HẦM NGỤC TẬP TRUNG</h3>
+        </div>
+        <button onclick="app.closePomodoroModal()" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Select Habit for Dungeon -->
+      <div class="mt-4 text-left">
+        <label class="block text-xs text-slate-400 mb-1">Nhiệm vụ đang chinh phục:</label>
+        <select id="pomo-habit-select" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm focus:outline-none focus:border-indigo-400"></select>
+      </div>
+
+      <!-- Duration Selector -->
+      <div class="flex items-center justify-center gap-2 mt-4">
+        <button onclick="app.setPomodoroDuration(25)" id="pomo-mode-25" class="px-3.5 py-1.5 rounded-lg text-xs font-hud font-bold bg-indigo-500 text-white">
+          25 PHÚT (CHUẨN)
+        </button>
+        <button onclick="app.setPomodoroDuration(45)" id="pomo-mode-45" class="px-3.5 py-1.5 rounded-lg text-xs font-hud font-bold bg-slate-900 text-slate-300 border border-slate-700">
+          45 PHÚT (SÂU)
+        </button>
+        <button onclick="app.setPomodoroDuration(0.0833)" id="pomo-mode-demo" class="px-3 py-1.5 rounded-lg text-xs font-hud font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40" title="Chạy thử 5 giây để test tính năng hoàn thành">
+          ⚡ 5s Test
+        </button>
+      </div>
+
+      <!-- Circular Countdown Display -->
+      <div class="relative w-48 h-48 mx-auto my-5 flex items-center justify-center">
+        <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#1e293b" stroke-width="8" />
+          <circle
+            id="pomo-progress-circle"
+            cx="60"
+            cy="60"
+            r="52"
+            fill="none"
+            stroke="#818cf8"
+            stroke-width="8"
+            stroke-linecap="round"
+            stroke-dasharray="326.72"
+            stroke-dashoffset="0"
+            class="transition-all duration-500"
+          />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <div id="pomo-time-display" class="text-4xl font-hud font-extrabold text-white glow-cyan">25:00</div>
+          <div id="pomo-status-sub" class="text-[11px] text-indigo-300 mt-1">Sẵn sàng tiến vào hầm ngục</div>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-400 bg-slate-900/80 border border-slate-800 rounded-lg p-2.5 mb-4">
+        Hoàn tất phiên tập trung sẽ <strong class="text-emerald-400">tự động đánh dấu Hoàn Thành (100%)</strong> (hoặc nâng lên <strong class="text-fuchsia-400">⚡ 150% Overdrive</strong> nếu đã xong) + thưởng thêm <strong class="text-amber-300">+25 🪙 Vàng</strong>!
+      </p>
+
+      <div class="flex items-center justify-center gap-3">
+        <button id="pomo-start-btn" onclick="app.togglePomodoro()" class="px-6 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-sm shadow-lg shadow-indigo-500/30 transition flex items-center gap-2">
+          <i class="fa-solid fa-play"></i>
+          <span>BẮT ĐẦU</span>
+        </button>
+        <button onclick="app.resetPomodoro()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition">
+          <i class="fa-solid fa-rotate-left"></i> Đặt lại
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: CỬA HÀNG PHẦN THƯỞNG & TÚI ĐỒ (REWARD SHOP & INVENTORY)
+       ======================================================================== -->
+  <div id="shop-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="hud-card max-w-3xl w-full p-5 sm:p-6 border border-amber-500/50 max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+        <div>
+          <span class="text-[10px] font-hud uppercase tracking-widest text-amber-400 font-bold">SYSTEM STORE & INVENTORY</span>
+          <h3 class="text-lg sm:text-xl font-hud font-bold text-white flex items-center gap-2">
+            <span>🛒 CỬA HÀNG PHẦN THƯỞNG & TÚI ĐỒ THỢ SĂN</span>
+          </h3>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="px-3 py-1 rounded-lg bg-amber-500/15 border border-amber-400/40 text-amber-300 font-hud font-bold text-sm">
+            🪙 <span id="shop-gold-balance">0</span> Vàng
+          </div>
+          <button onclick="app.closeShopModal()" class="text-slate-400 hover:text-white text-lg">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Body Scrollable -->
+      <div class="overflow-y-auto space-y-5 my-4 pr-1">
+        <!-- Penalty Lock Notice inside Shop -->
+        <div id="shop-penalty-lock-notice" class="hidden p-3 rounded-xl bg-red-950/90 border border-red-500 text-red-200 text-xs font-semibold flex items-center gap-2">
+          <i class="fa-solid fa-lock text-red-400 text-base"></i>
+          <span>KHU VỰC PHẠT ĐANG KÍCH HOẠT (HP = 0): Các Phần thưởng Đời thực đã bị khóa cho đến khi bạn hoàn thành Nhiệm vụ Phạt!</span>
+        </div>
+
+        <!-- Section 1: Vật Phẩm Hệ Thống -->
+        <div>
+          <h4 class="text-xs font-hud uppercase tracking-wider text-sky-400 font-bold mb-2.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved"></i> VẬT PHẨM HỆ THỐNG (SYSTEM ARTIFACTS)
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Khiên Định Hồn -->
+            <div class="bg-slate-900/90 border border-sky-500/30 rounded-xl p-3.5 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-sky-500/15 border border-sky-400/40 flex items-center justify-center text-2xl">
+                  🛡️
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-white">Khiên Định Hồn</div>
+                  <div class="text-xs text-slate-400">Đóng băng 1 ngày bận mà không đứt Streak (Đang có: <strong id="shop-shield-count" class="text-sky-300">0</strong>)</div>
+                </div>
+              </div>
+              <button onclick="app.buySystemItem('shield')" class="px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-hud font-bold text-xs shrink-0 shadow">
+                100 🪙 Mua
+              </button>
+            </div>
+
+            <!-- Bình Hồi Phục HP -->
+            <div class="bg-slate-900/90 border border-emerald-500/30 rounded-xl p-3.5 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center text-2xl">
+                  🧪
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-white">Bình Hồi Phục +30 HP</div>
+                  <div class="text-xs text-slate-400">Hồi ngay 30 Sinh Mệnh (Đang có: <strong id="shop-potion-count" class="text-emerald-300">0</strong>)</div>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1 shrink-0">
+                <button onclick="app.buySystemItem('potion')" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-hud font-bold text-xs shadow">
+                  80 🪙 Mua
+                </button>
+                <button onclick="app.useHpPotion()" class="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[10px] font-semibold">
+                  Dùng ngay
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Phần Thưởng Đời Thực -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h4 class="text-xs font-hud uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-gift"></i> PHẦN THƯỞNG ĐỜI THỰC (REAL-LIFE REWARDS)
+            </h4>
+          </div>
+
+          <!-- Add New Custom Reward Form -->
+          <form onsubmit="app.saveCustomReward(event)" class="flex flex-col sm:flex-row gap-2 mb-3 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+            <input type="hidden" id="reward-edit-id" />
+            <input
+              type="text"
+              id="reward-title-input"
+              required
+              placeholder="Thêm phần thưởng đời thực (VD: Uống 1 ly trà sữa ngon)..."
+              class="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-400"
+            />
+            <div class="flex items-center gap-2">
+              <input
+                type="number"
+                id="reward-cost-input"
+                required
+                min="10"
+                step="10"
+                value="150"
+                placeholder="Giá Vàng"
+                class="w-24 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-amber-300 font-hud font-bold text-xs focus:outline-none focus:border-amber-400"
+              />
+              <button type="submit" id="reward-submit-btn" class="px-3.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 font-bold text-xs whitespace-nowrap">
+                + Thêm Giải Thưởng
+              </button>
+            </div>
+          </form>
+
+          <!-- Custom Rewards List -->
+          <div id="custom-rewards-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+        </div>
+
+        <!-- Section 3: Lịch Sử Chi Tiêu Vàng -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-hud uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ CHI TIÊU & NHẬN THƯỞNG GẦN ĐÂY
+            </h4>
+            <button onclick="app.clearShopHistory()" class="text-[11px] text-slate-500 hover:text-slate-300">Xóa lịch sử</button>
+          </div>
+          <div id="shop-history-list" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1.5 text-xs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 4: GHI CHÚ NGÀY / MICRO-LOG NHẬT KÝ TU LUYỆN (NOTE MODAL)
+       ======================================================================== -->
+  <div id="note-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="hud-card max-w-md w-full p-5 border border-emerald-500/50">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-hud font-bold text-white flex items-center gap-2">
+          <span>📝 NHẬT KÝ TU LUYỆN NGÀY:</span>
+          <span id="note-modal-date-label" class="text-emerald-400"></span>
+        </h3>
+        <button onclick="app.closeNoteModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form onsubmit="app.saveNoteModal(event)" class="mt-4 space-y-3">
+        <input type="hidden" id="note-modal-date-key" />
+        <textarea
+          id="note-modal-textarea"
+          rows="4"
+          placeholder="Ghi lại điểm nhấn hôm nay (VD: Đọc xong bài báo YOLOv10, chạy bộ 4km dưới mưa, cảm thấy rất tập trung)..."
+          class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-400"
+        ></textarea>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="app.closeNoteModal()" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">
+            Đóng
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs">
+            Lưu Ghi Chú
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="./audio.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

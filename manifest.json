@@ -1,0 +1,20 @@
+{
+  "name": "SYSTEM: NGŨ HÀNH LEVELING",
+  "short_name": "Ngũ Hành Leveling",
+  "description": "Effort Analytics Tracker x Solo Leveling System UI & Ngũ Hành Tương Sinh",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060913",
+  "theme_color": "#060913",
+  "categories": ["productivity", "lifestyle", "games"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
