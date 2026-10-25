@@ -11,16 +11,12 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="96" fill="url(#bgGrad)" stroke="url(#neonCyan)" stroke-width="14"/>
-  <!-- Ngũ giác Ngũ Hành -->
   <polygon points="256,68 438,200 369,414 143,414 74,200" fill="rgba(56,189,248,0.12)" stroke="url(#neonCyan)" stroke-width="12" stroke-linejoin="round"/>
-  <!-- Ngôi sao Tương Sinh / Khắc -->
   <polygon points="256,105 345,385 108,212 404,212 167,385" fill="none" stroke="rgba(245,158,11,0.55)" stroke-width="6" stroke-linejoin="round"/>
-  <!-- 5 Đỉnh Ngũ Hành -->
   <circle cx="256" cy="68" r="20" fill="#10b981"/>
   <circle cx="438" cy="200" r="20" fill="#f97316"/>
   <circle cx="369" cy="414" r="20" fill="#f59e0b"/>
   <circle cx="143" cy="414" r="20" fill="#38bdf8"/>
   <circle cx="74" cy="200" r="20" fill="#818cf8"/>
-  <!-- Chữ S (SYSTEM) trung tâm -->
-  <text x="256" y="292" font-family="Orbitron, Rajdhani, sans-serif" font-weight="900" font-size="115" fill="#f8fafc" text-anchor="middle">S</text>
+  <text x="256" y="292" font-family="Chakra Petch, Be Vietnam Pro, sans-serif" font-weight="700" font-size="115" fill="#f8fafc" text-anchor="middle">S</text>
 </svg>

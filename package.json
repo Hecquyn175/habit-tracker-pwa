@@ -1,0 +1,20 @@
+{
+  "name": "system-ngu-hanh-leveling",
+  "version": "4.0.0",
+  "description": "SYSTEM: NGŨ HÀNH LEVELING v4.0 ULTIMATE — Offline Static PWA",
+  "type": "module",
+  "scripts": {
+    "build:css": "tailwindcss -i ./css/styles.css -o ./css/tailwind.build.css --minify",
+    "test": "node ./tests/engine.test.js"
+  },
+  "dependencies": {
+    "@fontsource/be-vietnam-pro": "^5.1.0",
+    "@fontsource/chakra-petch": "^5.1.0",
+    "@fortawesome/fontawesome-free": "^6.5.1",
+    "canvas-confetti": "^1.9.2",
+    "chart.js": "^4.4.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.14"
+  }
+}

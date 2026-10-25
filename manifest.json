@@ -1,8 +1,9 @@
 {
-  "name": "SYSTEM: NGŨ HÀNH LEVELING",
+  "name": "SYSTEM: NGŨ HÀNH LEVELING — v4.0 ULTIMATE",
   "short_name": "Ngũ Hành Leveling",
   "description": "Effort Analytics Tracker x Solo Leveling System UI & Ngũ Hành Tương Sinh",
-  "start_url": "./index.html",
+  "lang": "vi",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
@@ -14,7 +15,41 @@
       "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Thêm Thói Quen",
+      "short_name": "Thêm Thói Quen",
+      "description": "Khởi tạo nhiệm vụ Ngũ Hành mới",
+      "url": "./?action=new-habit",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Hầm Ngục Tập Trung",
+      "short_name": "Hầm Ngục",
+      "description": "Mở đồng hồ Pomodoro Tập Trung",
+      "url": "./?action=pomodoro",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }
